@@ -20,7 +20,9 @@ const register = asyncHandler(async (req, res) => {
 
   const user = await User.create({ email, password_hash, role, otp_code, otp_expires_at });
 
-  await sendOTPEmail(email, otp_code);
+  // Send email in background — don't block the response
+  sendOTPEmail(email, otp_code).catch((err) => console.error('Email send failed:', err.message));
+
   res.status(201).json({ message: 'Registration successful. Check your email for OTP.', userId: user._id });
 });
 
@@ -52,7 +54,7 @@ const resendOTP = asyncHandler(async (req, res) => {
   user.otp_expires_at = new Date(Date.now() + 10 * 60 * 1000);
   await user.save();
 
-  await sendOTPEmail(user.email, user.otp_code);
+  sendOTPEmail(user.email, user.otp_code).catch((err) => console.error('Email send failed:', err.message));
   res.json({ message: 'OTP resent successfully' });
 });
 
@@ -71,7 +73,7 @@ const login = asyncHandler(async (req, res) => {
     user.otp_code = generateOTP();
     user.otp_expires_at = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
-    await sendOTPEmail(email, user.otp_code);
+    sendOTPEmail(email, user.otp_code).catch((err) => console.error('Email send failed:', err.message));
     return res.status(403).json({
       message: 'Email not verified. OTP sent.',
       userId: user._id,
@@ -122,7 +124,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.otp_expires_at = otpExpiry;
   await user.save();
 
-  await sendResetEmail(email, otp);
+  sendResetEmail(email, otp).catch((err) => console.error('Reset email failed:', err.message));
   res.json({ message: 'Password reset code sent to your email.', userId: user._id });
 });
 
