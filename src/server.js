@@ -38,6 +38,7 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/sticks', require('./routes/sticks'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', db: 'mongodb', timestamp: new Date() }));
 

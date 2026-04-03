@@ -20,6 +20,10 @@ const register = asyncHandler(async (req, res) => {
 
   const user = await User.create({ email, password_hash, role, otp_code, otp_expires_at });
 
+  // Give 10 signup bonus sticks
+  const StickTransaction = require('../models/StickTransaction');
+  StickTransaction.create({ user_id: user._id, type: 'credit', amount: 10, reason: 'signup_bonus', description: 'Welcome bonus sticks', balance_after: 10 }).catch(() => {});
+
   // Send email in background — don't block the response
   sendOTPEmail(email, otp_code).catch((err) => console.error('Email send failed:', err.message));
 

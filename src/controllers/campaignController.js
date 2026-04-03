@@ -1,4 +1,4 @@
-﻿const Campaign = require('../models/Campaign');
+const Campaign = require('../models/Campaign');
 const Application = require('../models/Application');
 const BrandProfile = require('../models/BrandProfile');
 const InfluencerProfile = require('../models/InfluencerProfile');
@@ -124,3 +124,5 @@ const getMyApplications = asyncHandler(async (req, res) => {
 });
 
 module.exports = { createCampaign, getCampaigns, getBrandCampaigns, getCampaignById, updateCampaign, deleteCampaign, getCampaignApplications, applyToCampaign, updateApplicationStatus, getMyApplications };
+
+
