@@ -116,20 +116,30 @@ const changePassword = asyncHandler(async (req, res) => {
 // POST /auth/forgot-password
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: email.toLowerCase().trim() });
 
-  // Always return success to prevent email enumeration
-  if (!user) return res.json({ message: 'If this email exists, a reset link has been sent.' });
+  // Always return 200 to prevent email enumeration
+  if (!user) {
+    return res.json({ message: 'If this email is registered, a reset code has been sent.' });
+  }
 
-  // Generate a 6-digit reset OTP (reuse OTP system)
   const otp = generateOTP();
-  const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
   user.otp_code = otp;
-  user.otp_expires_at = otpExpiry;
+  user.otp_expires_at = new Date(Date.now() + 15 * 60 * 1000); // 15 min
   await user.save();
 
-  sendResetEmail(email, otp).catch((err) => console.error('Reset email failed:', err.message));
-  res.json({ message: 'Password reset code sent to your email.', userId: user._id });
+  try {
+    await sendResetEmail(email, otp);
+  } catch (err) {
+    console.error('Reset email failed:', err.message);
+    // Still return userId so user can proceed — OTP is in DB
+  }
+
+  // Return userId so frontend can proceed to reset step
+  res.json({
+    message: 'Reset code sent to your email.',
+    userId: user._id.toString(),
+  });
 });
 
 // POST /auth/reset-password
